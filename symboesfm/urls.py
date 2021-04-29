@@ -11,4 +11,4 @@ urlpatterns = [
     path('submit/', home_view.submit, name = 'submit'),
     path('creditos/', home_view.creditos, name = 'creditos'),
     path('', home_view.home, name = 'home')
-]
+]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
