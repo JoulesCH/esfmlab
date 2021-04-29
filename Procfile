@@ -1,1 +1,1 @@
-web:gunicorn symboesfm.wsgi --log-file -
+web:gunicorn symboesfm.wsgi
