@@ -405,13 +405,16 @@ class integracion_numerica():
         g = self.exp
         for _ in range(grado):
             g = diff(g, x)
-            
-        puntos_criticos = solve(g,x)
+
+        try:             
+            puntos_criticos = solve(g,x)
+        else:
+            puntos_criticos = []
         puntos_criticos = [p for p in puntos_criticos if p >= self.a and p<=self.b] + [self.a,self.b]
         
-        maximo = abs(f.subs(x,puntos_criticos[0]))
+        maximo = float(abs(f.subs(x,puntos_criticos[0])))
         for punto in puntos_criticos:
-            valor = abs(f.subs(x, N(punto)))
+            valor = float(abs(f.subs(x, N(punto))))
             if valor > maximo:
                 maximo = valor
                 
