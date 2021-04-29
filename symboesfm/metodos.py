@@ -408,7 +408,7 @@ class integracion_numerica():
 
         try:             
             puntos_criticos = solve(g,x)
-        else:
+        except:
             puntos_criticos = []
         puntos_criticos = [p for p in puntos_criticos if p >= self.a and p<=self.b] + [self.a,self.b]
         
