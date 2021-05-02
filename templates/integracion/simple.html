@@ -1,6 +1,5 @@
-
 {%extends "base.html"%}
-
+{%load static%}
 {%block header%}
     <title> ESFMlab |  Ingresar Ecuación</title>
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/mathquill/0.10.1/mathquill.min.css">`
@@ -9,6 +8,7 @@
     <script>
         var MQ = MathQuill.getInterface(2);
     </script>
+    <link rel="shortcut icon" type = "image/png" href="{% static 'favicon.ico' %}">
 {%endblock%}
 
 {%block content%}

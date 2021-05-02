@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from sympy import parse_expr, latex
 from symboesfm.metodos import integracion_numerica
 def view(request):
