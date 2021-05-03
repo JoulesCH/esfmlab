@@ -19,10 +19,12 @@ def view(request):
                     '3': 'Simpson 3/8'}
 
         aproximacion = metodos[request.session['metodo']](int(request.session['particiones']))
+        
+        errores = integral.errores().reset_index().to_dict('records')
+        pasos = integral.pasos
+        return render(request, 'integracion/view.html', {'equation':equation, 'aproximacion': aproximacion, 'metodo':nombres[request.session['metodo']], 'tipo':'simple', 'errores':errores, 'pasos':pasos})
 
-        return render(request, 'integracion/view.html', {'equation':equation, 'aproximacion': aproximacion, 'metodo':nombres[request.session['metodo']], 'tipo':'simple'})
-
-    else:
+    elif request.session['tipo'] == "doble":
 
         try:
             a = float(request.session['a'])
@@ -49,8 +51,21 @@ def view(request):
                     '3': 'Simpson 3/8 Doble'}
 
         aproximacion = metodos[request.session['metodo']]([float(request.session['c']), float(request.session['d'])], int(request.session['particiones']))
-        return render(request, 'view.html', {'equation':equation, 'aproximacion': aproximacion, 'metodo':nombres[request.session['metodo']], 'tipo':tipo, 'aa':aa, 'bb':bb})
+        errores = integral.errores().reset_index().to_dict('records')
+        pasos = integral.pasos
+        return render(request, 'integracion/view.html', {'equation':equation, 'aproximacion': aproximacion, 'metodo':nombres[request.session['metodo']], 'tipo':tipo, 'aa':aa, 'bb':bb, 'errores':errores, 'pasos':pasos})
 
+    elif request.session['tipo'] == "extrapolacion":
+
+        nombres = { '1': 'Romberg con Trapezoidal', 
+                    '2': 'Romberg con Simpson 1/3', 
+                    '3': 'Romberg con Simpson 3/8'}
+
+        integral = integracion_numerica([float(request.session['a']), float(request.session['b'])], request.session['eq'] )
+
+        aproximacion = integral.romberg(n = int(request.session['particiones']), metodo = request.session['metodo'])
+        errores = integral.errores().reset_index().to_dict('records')
+        return render(request, 'integracion/view.html', {'equation':equation, 'aproximacion': aproximacion, 'metodo':nombres[request.session['metodo']], 'tipo':'romberg', 'errores':errores})
 
 def simple(request):
 
@@ -59,6 +74,9 @@ def simple(request):
 def doble(request):
 
     return render(request, 'integracion/doble.html')
+    
+def extrapolacion(request):
+    return render(request, 'integracion/extrapolacion.html')
 
 def submit(request):
     if request.method == 'POST':

@@ -11,12 +11,13 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('creditos/', home_view.creditos, name = 'creditos'),
     path('', home_view.home, name = 'home'),
-    path('/construccion', home_view.construccion, name = 'construccion'),
+    path('construccion/', home_view.construccion, name = 'construccion'),
 
     #Integracion
     path('integracion/view/', integracion_views.view, name = 'view'),
     path('integracion/simple/', integracion_views.simple, name =  "simple"),
     path('integracion/doble/', integracion_views.doble, name =  "doble"),
     path('integracion/submit/', integracion_views.submit, name = 'submit'),
+    path('integracion/extrapolacion/', integracion_views.extrapolacion, name = 'extrapolacion')
 
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

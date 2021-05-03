@@ -85,6 +85,7 @@ class integracion_numerica():
         self.relativo = None
         self.verdadero = None
         
+        self.pasos = []
         
         
     ####----- SIMPLES: ------####  
@@ -137,14 +138,39 @@ class integracion_numerica():
     
     def trapezoidal_compuesto(self, particiones):
         x = symbols('x')
-        h = (self.b-self.a)/particiones
-        puntos_soporte = np.linspace(self.a + h,self.b - h, particiones-1 )
         
+        h = (self.b-self.a)/particiones
+
+        self.pasos.append({ 'titulo':'Calcular h', 
+                            'procedimiento': '\\( h = \\frac{b-a}{particiones}  \\)',
+                            'resultado': '\\( \\Rightarrow  h = \\frac{'+ str(self.b) + ' - ' + str(self.a) +'}{'+str(particiones)+'}  = ' + str(h)+ '\\)'})
+
+        puntos_soporte = np.linspace(self.a + h,self.b - h, particiones-1 )
+
+        self.pasos.append({ 'titulo':'Calcular puntos de soporte', 
+                            'procedimiento': 'De h en h desde \\(a\\) hasta \\(b\\)',
+                            'resultado': '\\( x_i =  \\)' + ' ' + str(list(puntos_soporte))})
+
         funcion_evaluada = [self.exp.subs(x,t) for t in puntos_soporte]
+        self.pasos.append({ 'titulo':'Evaluar los puntos de soporte en la función', 
+                            'procedimiento': '\\( f(x_i) \\)',
+                            'resultado': '\\( f(x_i) =  \\)' + ' ' +  str(funcion_evaluada)})
 
         aprox_inter = sum(funcion_evaluada)
+        self.pasos.append({ 'titulo':'Sumar los puntos de soporte evaluados', 
+                            'procedimiento': '\\( \\sum f(x_i) \\)',
+                            'resultado': '\\( \\sum f(x_i) = \\ \\) ' + str(aprox_inter)})
+        fa = self.exp.subs(x,self.a) 
+        fb = self.exp.subs(x,self.b)
+        self.solucion = h*((1/2)*(fa+ fb) + aprox_inter) 
 
-        self.solucion = h*((1/2)*(self.exp.subs(x,self.a) + self.exp.subs(x,self.b)) + aprox_inter) 
+        self.pasos.append({ 'titulo':'Calcular la aproximación con la fórmula', 
+                            'procedimiento': '\\( h\\cdot(\\frac{1}{2} \\cdot (f(a) + f(b)) + \\sum f(x_i) ) \\)',
+                            'resultado': f'''\\( \\Rightarrow  {h}\\cdot(\\frac{1}{2} \\cdot (f({self.a}) + f({self.b})) + {aprox_inter} ) \\ \\)
+                                            
+                                            \\( \\Rightarrow  {h}\\cdot(0.5 \\cdot ({fa} + {fb}) + {aprox_inter} ) = \\ \\)
+                                        ''' + str(self.solucion)})
+
         self.metodo = "Trapezoidal compuesto"
         
         f_biprima = diff(self.exp,x,x)
@@ -159,15 +185,59 @@ class integracion_numerica():
     def simpson1_3_compuesto(self, particiones):
         x = symbols('x')
         h = (self.b-self.a)/(2*particiones)
+        self.pasos.append({ 'titulo':'Calcular h', 
+                            'procedimiento': '\\( h = \\frac{b-a}{2 \\cdot particiones}  \\)',
+                            'resultado': '\\( \\Rightarrow  h = \\frac{'+ str(self.b) + ' - ' + str(self.a) +'}{2 \\cdot'+str(particiones)+'}  = ' + str(h)+ '\\)'})
+
         soportes = np.linspace(self.a + h, self.b-h, 2*particiones - 1)
-        
+        self.pasos.append({ 'titulo':'Calcular puntos de soporte', 
+                            'procedimiento': 'De h en h desde \\(a\\) hasta \\(b\\)',
+                            'resultado': '\\( x_i =  \\)' + ' ' + str(list(soportes))})
+
         cuatri = diff(self.exp, x, x, x, x)
-        Rt = - ((h**5)/90)*cuatri.subs(x,((self.b-self.a)/2))
-       
-        S1 = sum([self.exp.subs(x,soportes[i]) for i in range(0,2*particiones,2)])
-        S2 = sum([self.exp.subs(x,soportes[i]) for i in range(1,2*particiones-1,2)])
+
+        self.pasos.append({ 'titulo':'Derivar 4 veces \\( \\ f(x) \\)', 
+                            'procedimiento': '\\(f^{(i)}(x) = '+latex(diff(self.exp, x)) + ' \\)' + ',  ' +'\\(f^{(ii)}(x) = '+latex(diff(self.exp, x, x)) + ' \\)' + ',  ' +'\\(f^{(iii)}(x) = '+latex(diff(self.exp, x,x,x)) + ' \\)' + ',  ' +'\\(f^{(iv)}(x) = '+latex(cuatri) + ' \\)',
+                            'resultado': ''})
+
+        try:
+            grado = degree(self.exp, gen = x )
+        except PolynomialError:
+            Rt = 0
+        else:
+            if grado > 3:
+                Rt = - ((h**5)/90)*cuatri.subs(x,((self.b-self.a)/2))
+                self.pasos.append({ 'titulo':'Calcular  \\(\\ R_t \\)', 
+                            'procedimiento': 'Debido a que la función es polinómica de grado '+ str(grado) + ', se calcula \\( \\ R_t = \\frac{h^5}{90} \\cdot f^{(iv)} (p) \\), con \\( \\ p \\in (a,b)  \\)',
+                            'resultado': '\\( \\Rightarrow  \\ R_t = \\frac{'+str(h)+'^5}{90} \\cdot f^{(iv)} ('+ str((self.b-self.a)/2) +')  \\)' +  '\\( \\  \\Rightarrow  \\ R_t = ' + str((h**5)/90) +'\\cdot' +  str(cuatri.subs(x,((self.b-self.a)/2))) + '  = \\  \\)' + str(Rt)
+                            })
+            else: 
+                Rt = 0
+
+        S1_el = [soportes[i] for i in range(0,2*particiones,2)]
+        S2_el = [soportes[i] for i in range(1,2*particiones-1,2)]
+        S1_ev = [self.exp.subs(x,i) for i in S1_el]
+        S2_ev = [self.exp.subs(x,i) for i in S2_el]
+        S1 = sum(S1_ev)
+        S2 = sum(S2_ev)
+
+        self.pasos.append({ 'titulo':'Evaluar los puntos de soporte en  \\( \\ f(x) \\)', 
+                            'procedimiento': 'Para facilitar cálculos, se divide en dos sumas: \\( \\ S_1 = \\sum_{i=0}^{2\\cdot \\ particiones}x_{2i} \\ \\)  y \\(  \\ S_2 = \\sum_{i=1}^{2\\cdot \\ particiones}x_{2i-1}  \\)',
+                            'resultado': 'Puntos de soporte para \\( \\ S_1 \\Rightarrow \\  \\)' + str(S1_el) +'\nEvaluados: '+str(S1_ev) + '. \n\nPara\\( \\ S_2  \\Rightarrow \\ \\)' + str(S2_el) +'.' +' \nEvaluados: '+str(S2_ev)  })
         
-        self.solucion = (h/3)*(self.exp.subs(x, self.a) + 4*S1 + 2*S2 + self.exp.subs(x, self.b)) + (Rt if particiones > 1 else 0)
+        self.pasos.append({ 'titulo':'Calcular la suma de \\( \\ S_1 \\ \\) y \\( \\ S_2 \\)  ', 
+                            'procedimiento': 'Como recordatorio  \\( \\ S_1 \\) es la suma de los puntos de soporte en posición par y  \\( \\ S_2 \\) en posición impar. ',
+                            'resultado': ' \\( \\ S_1 = \\  \\)' + str(S1) + ' \n\\( \\ S_2 = \\ \\)' + str(S2)  })
+        
+        fa = self.exp.subs(x, self.a)
+        fb = self.exp.subs(x, self.b)
+
+        self.solucion = (h/3)*(fa + 4*S1 + 2*S2 + fb) + Rt
+
+        self.pasos.append({ 'titulo':'Calcular la aproximación con la fórmula', 
+                            'procedimiento': '\\( h\\cdot\\frac{1}{3} \\cdot (f(a) + f(b) + 4 \\cdot S1 + 2 \\cdot S2 ) + R_t \\)',
+                            'resultado': ' \\( \\Rightarrow \\ ' + str(h) +'\\cdot\\frac{1}{3} \\cdot ('+ str(fa) +' + '+ str(fb) +' + 4 \\cdot '+  str(S1) +'+ 2 \\cdot '+ str(S2) +' ) +'+ str(Rt) +' \\)' +'\n =  ' + str(self.solucion)   })
+        
         self.metodo = "Simpson 1/3 compuesto"
         
         self.total = -(((self.b-self.a)**5)/(180*particiones**4))*cuatri.subs(x,(self.b-self.a)/2) 
@@ -179,17 +249,49 @@ class integracion_numerica():
     def simpson3_8_compuesto(self, particiones):
         x = symbols('x')
         h = (self.b-self.a)/(3*particiones)
+        self.pasos.append({ 'titulo':'Calcular h', 
+                            'procedimiento': '\\( h = \\frac{b-a}{2 \\cdot particiones}  \\)',
+                            'resultado': '\\( \\Rightarrow  h = \\frac{'+ str(self.b) + ' - ' + str(self.a) +'}{3 \\cdot'+str(particiones)+'}  = ' + str(h)+ '\\)'})
+
         soportes = np.linspace(self.a+h, self.b-h, 3*particiones - 1)
+        self.pasos.append({ 'titulo':'Calcular puntos de soporte', 
+                            'procedimiento': 'De h en h desde \\(a\\) hasta \\(b\\)',
+                            'resultado': '\\( x_i =  \\)' + ' ' + str(list(soportes))})
+
+        S1_el = [soportes[i] for i in range(0,3*particiones,3)]
+        S2_el = [soportes[i] for i in range(1,3*particiones,3)]
+        S3_el = [soportes[i] for i in range(2,3*particiones-1,3)]
+
+        S1_ev = [self.exp.subs(x,i) for i in S1_el]
+        S2_ev = [self.exp.subs(x,i) for i in S2_el]
+        S3_ev = [self.exp.subs(x,i) for i in S3_el]
         
-        
-        S1 = sum([self.exp.subs(x,soportes[i]) for i in range(0,3*particiones,3)])# 1,4,7,10
-        S2 = sum([self.exp.subs(x,soportes[i]) for i in range(1,3*particiones,3)])# 2,5,8,11
-        S3 = sum([self.exp.subs(x,soportes[i]) for i in range(2,3*particiones-1,3)])# 3,6,9
+        S1 = sum(S1_ev)# 1,4,7,10
+        S2 = sum(S2_ev)# 2,5,8,11
+        S3 = sum(S3_ev)# 3,6,9
         #S4 = sum([self.exp.subs(x,soportes[i]) for i in range(3,3*particiones,3)]) 4,
+
+        self.pasos.append({ 'titulo':'Evaluar los puntos de soporte en  \\( \\ f(x) \\)', 
+                            'procedimiento': 'Para facilitar cálculos, se divide en dos sumas: \\( \\ S_1 = \\sum_{i=0}^{2\\cdot \\ particiones-1}x_{3i} \\ \\), \\(  \\ S_2 = \\sum_{i=1}^{2\\cdot \\ particiones}x_{3i-1}  \\) y \\(  \\ S_2 = \\sum_{i=2}^{2\\cdot \\ particiones}x_{3i-2}  \\)',
+                            'resultado': 'Puntos de soporte para \\( \\ S_1 \\Rightarrow \\  \\)' + str(S1_el) +'\nEvaluados: '+str(S1_ev) + ' \n\nPara\\( \\ S_2  \\Rightarrow \\ \\)' + str(S2_el) +'' +' \nEvaluados: '+str(S2_ev)+ ' \n\nPara\\( \\ S_3  \\Rightarrow \\ \\)' + str(S3_el) +'' +' \nEvaluados: '+str(S3_ev)  })
         
         #print(f'{self.exp.subs(x,self.a)} {self.exp.subs(x,self.b)} 3*{[self.exp.subs(x,soportes[i]) for i in range(0,3*particiones,3)]} 3*{[self.exp.subs(x,soportes[i]) for i in range(1,3*particiones,3)]}  2*{[self.exp.subs(x,soportes[i]) for i in range(2,3*particiones-1,3)]}' )
+        self.pasos.append({ 'titulo':'Calcular la suma de \\( \\ S_1 \\ \\),  \\( \\ S_2 \\ \\) y  \\( \\ S_3 \\)  ', 
+                            'procedimiento': 'Como recordatorio  \\( \\ S_1 \\) es la suma de los puntos de soporte en posición 0, 3, 4, 7,  10, ...   \\( \\ S_2 \\) en posición 1, 4, 7, 10, ... y  \\( \\ S_3 \\) en posición 2, 5, 8, 11, ... . ',
+                            'resultado': ' \\( \\ S_1 = \\  \\)' + str(S1) + ' \n\\( \\ S_2 = \\ \\)' + str(S2) + ' \n\\( \\ S_3 = \\ \\)' + str(S3) })
         
-        self.solucion = (3*h/8)*(self.exp.subs(x,self.a) + 3*S1 + 3*S2 + 2*S3  + self.exp.subs(x,self.b))
+        fa = self.exp.subs(x,self.a)
+        fb = self.exp.subs(x,self.b)
+        s1_3 = 3*S1
+        s2_3 = 3*S2
+        s3_2 = 2*S3
+        self.solucion = (3*h/8)*(fa + s1_3 + s2_3 + s3_2  + fb)
+
+        self.pasos.append({ 'titulo':'Calcular la aproximación con la fórmula', 
+                            'procedimiento': '\\( 3 \\cdot h\\cdot\\frac{1}{8} \\cdot (f(a) + f(b) + 3 \\cdot S1 + 3 \\cdot S2 + 2 \\cdot S3) \\)',
+                            'resultado': ' \\( \\Rightarrow \\ 3 \\cdot' + str(h) +'\\cdot\\frac{1}{8} \\cdot ('+ str(fa) +' + '+ str(fb) +' + 3 \\cdot '+  str(S1) +'+ 3\\cdot '+ str(S2) + '\\) \n \\( + 2\\cdot '+ str(S3)  +' \\)' +' =  ' + str(self.solucion)   })
+        
+
         self.metodo = "Simpson 3/8 compuesto"
         
         cuatriprima = diff(self.exp, x, x, x, x)
@@ -217,25 +319,74 @@ class integracion_numerica():
         
         if bandera:
             h = (self.b-self.a)/particiones
+            self.pasos.append({ 'titulo':'Calcular \\( \\ h_x \\ \\)', 
+                            'procedimiento': '\\( h_x = \\frac{b-a}{ particiones}  \\)',
+                            'resultado': '\\( \\Rightarrow  h_x = \\frac{'+ str(self.b) + ' - ' + str(self.a) +'}{'+str(particiones)+'}  = ' + str(h)+ '\\)'})
+
 
             puntos_soporte = np.linspace(self.a + h,self.b - h, particiones-1)
 
-            funcion_evaluada = [self.exp.subs(x,t) for t in puntos_soporte]
+            self.pasos.append({ 'titulo':'Calcular puntos de soporte', 
+                            'procedimiento': 'De \\( \\ h_x \\ \\) en \\( \\ h_x \\ \\) desde \\(a\\) hasta \\(b\\)',
+                            'resultado': '\\( x_i =  \\)' + ' ' + str(list(puntos_soporte))})
 
+            funcion_evaluada = [self.exp.subs(x,t) for t in puntos_soporte]
+            funcion_evaluada_latex = [' \\(  ' + latex(t) + ' \\) ' for t in funcion_evaluada]
+            self.pasos.append({ 'titulo':'Evaluar los puntos de soporte en  \\( \\ f(x,y) \\)', 
+                            'procedimiento': '\\( f(x_i, y) \\)',
+                            'resultado': '\\( f(x_i, y) = \\ \\)' + '[ '+ (', '.join(funcion_evaluada_latex)) + ']' })
+        
             aprox_inter = sum(funcion_evaluada)
-            primera_integral =  h*((1/2)*(self.exp.subs(x,self.a) + self.exp.subs(x,self.b)) + aprox_inter) 
+            self.pasos.append({ 'titulo':'Calcular la suma de los puntos de soporte evaluados', 
+                            'procedimiento': '\\( \\sum f(x_i, y) \\)',
+                            'resultado': ' = \\( ' + latex(aprox_inter) + '\\)' })
+
+            fa = self.exp.subs(x,self.a)
+            fb = self.exp.subs(x,self.b)
+    
+            primera_integral =  h*((1/2)*(fa + fb) + aprox_inter) 
+
+            self.pasos.append({ 'titulo':'Calcular \\( \\ g(y) \\ \\)con la fórmula', 
+                            'procedimiento': '\\( h_x\\cdot(\\frac{1}{2} \\cdot (f(a,y) + f(b,y)) + \\sum f(x_i, y)) \\)',
+                            'resultado': '\\( '+ str(h) + ' \\cdot(\\frac{1}{2} \\cdot ('+latex(fa) +' + ' + latex(fb) +') + ' + latex(aprox_inter)  +') = ' + latex(simplify(primera_integral)) + ' \\)' + '\n \\( \\therefore g(y) = '+  latex(simplify(primera_integral)) + ' \\)'   })
+        
 
             c = intervalo2[0]
             d = intervalo2[1]
             h = (d-c)/particiones
+            self.pasos.append({ 'titulo':'Calcular \\( \\ h_y \\ \\)', 
+                            'procedimiento': '\\( h_y = \\frac{d-c}{ particiones}  \\)',
+                            'resultado': '\\( \\Rightarrow  h_y = \\frac{'+ str(d) + ' - ' + str(c) +'}{'+str(particiones)+'}  = ' + str(h)+ '\\)'})
+
+
             self.c = c
             self.d = d
             puntos_soporte = np.linspace(c + h, d - h, particiones-1)
+
+            self.pasos.append({ 'titulo':'Calcular puntos de soporte', 
+                            'procedimiento': 'De \\( \\ h_y \\ \\) en \\( \\ h_y \\ \\) desde \\(c\\) hasta \\(d\\)',
+                            'resultado': '\\( y_i =  \\)' + ' ' + str(list(puntos_soporte))})
+
             funcion_evaluada = [primera_integral.subs(y,t) for t in puntos_soporte]
-
+            funcion_evaluada_latex =  [' \\(  ' + latex(t) + ' \\) ' for t in funcion_evaluada]
+            self.pasos.append({ 'titulo':'Evaluar los puntos de soporte en  \\( \\ g(y) \\)', 
+                            'procedimiento': '\\( g(y_i) \\)',
+                            'resultado': '\\( g(y_i) = \\ \\)' + '[ '+ (', '.join(funcion_evaluada_latex)) + ']' })
+        
             aprox_inter = sum(funcion_evaluada)
-            self.solucion =  h*((1/2)*(primera_integral.subs(y,c) + primera_integral.subs(y,d)) + aprox_inter) 
 
+            self.pasos.append({ 'titulo':'Calcular la suma de los puntos de soporte evaluados', 
+                            'procedimiento': '\\( \\sum g(y_i) \\)',
+                            'resultado': ' = \\( ' + latex(aprox_inter) + '\\)' })
+
+            gc = primera_integral.subs(y,c)
+            gd = primera_integral.subs(y,d)
+            self.solucion =  h*((1/2)*(gc + gd) + aprox_inter) 
+
+            self.pasos.append({ 'titulo':'Aproximar la integral con la fórmula', 
+                            'procedimiento': '\\( h_y\\cdot(\\frac{1}{2} \\cdot (g(c) + g(d)) + \\sum g(y_i)) \\)',
+                            'resultado': '\\( '+ str(h) + ' \\cdot(\\frac{1}{2} \\cdot ('+ str(gc) +' + ' + str(gd) +') + ' + str(aprox_inter)  +') = ' + str(self.solucion) +' \\)'   })
+        
             self.metodo = "Trapezoidal compuesto doble numérico"
 
             f_biprima = diff(self.exp,x,x)
@@ -249,7 +400,9 @@ class integracion_numerica():
             c = intervalo2[0]
             d = intervalo2[1]
             h = (d-c)/particiones
-            
+            self.pasos.append({ 'titulo':'Calcular \\( \\ h_x \\ \\)', 
+                            'procedimiento': '\\( h_x = \\frac{d-c}{ particiones}  \\)',
+                            'resultado': '\\( \\Rightarrow  h_x = \\frac{'+ str(d) + ' - ' + str(c) +'}{'+str(particiones)+'}  = ' + str(h)+ '\\)'})
             a = parse_expr(self.a)
             b = parse_expr(self.b)
             self.a = a
@@ -257,11 +410,69 @@ class integracion_numerica():
             self.c = c
             self.d = d
             puntos_soporte = np.linspace(c + h,d - h, particiones-1)
-            
-            funcion_evaluada = [integracion_numerica([float(a.subs(x, t)), float(b.subs(x, t))], str(self.exp.subs(x,t).subs(y, x))).trapezoidal_compuesto(particiones) for t in puntos_soporte]
+
+            self.pasos.append({ 'titulo':'Calcular puntos de soporte', 
+                            'procedimiento': 'De \\( \\ h_x \\ \\) en \\( \\ h_x \\ \\) desde \\(c\\) hasta \\(d\\)',
+                            'resultado': '\\( x_i =  \\)' + ' ' + str(list(puntos_soporte))})
+            funcion_evaluada = []
+            procedimiento = []
+            for t in puntos_soporte:
+                aa = float(a.subs(x, t))
+                bb = float(b.subs(x, t))
+                expresion =  self.exp.subs(x,t)
+
+                integral = integracion_numerica([aa, bb], str(expresion.subs(y, x)) )
+                aproximacion = integral.trapezoidal_compuesto(particiones)
+
+                procedimiento.append({'titulo':'Calcular evaluando el punto de soporte \\( \\ '+ str(t) +' \\ \\) \\( \\ \\Rightarrow \\int_{'+ str(aa)+ '}^{'+ str(bb)+ '} '+ latex(expresion) +'\\ dy\\ \\) con el método Trapezoidal de '+ str(particiones) + ' particiones', 
+                                      'procedimiento': integral.pasos,
+                                      'resultado': str(aproximacion) 
+                                    })
+                funcion_evaluada.append(aproximacion)
+            self.pasos.append({ 'titulo':'Calcular las integrales evaluando los puntos de soporte en los límites de la integral y en la función', 
+                            'procedimiento2': procedimiento,
+                            'resultado': '\\( G(x_i) =  ' + str(funcion_evaluada) + '\\)' })
+
+            #funcion_evaluada = [integracion_numerica([float(a.subs(x, t)), float(b.subs(x, t))], str(self.exp.subs(x,t).subs(y, x))).trapezoidal_compuesto(particiones) for t in puntos_soporte]
             aprox_inter = sum(funcion_evaluada)
+
+            self.pasos.append({ 'titulo':'Calcular la suma de las integrales evaluadas', 
+                            'procedimiento': '\\( \\sum G(x_i) \\)',
+                            'resultado': '\\( \\sum G(x_i) =  ' + str(aprox_inter) + '\\)' })
+
+            aa1 = float(a.subs(x, c))
+            bb1 = float(b.subs(x,c))
+            expression1 = self.exp.subs(x,c)
+
+            aa2 = float(a.subs(x, d))
+            bb2 = float(b.subs(x, d))
+            expression2 = self.exp.subs(x,d)
+
+            procedimiento2 = []
+            integral_c = integracion_numerica([aa1, bb1], str(expression1.subs(y, x)))
+            aproximacionc = integral_c.trapezoidal_compuesto(particiones) 
+            procedimiento2.append({'titulo':'Calcular evaluando el punto  \\( \\ '+ str(c) +' \\ \\) \\( \\ \\Rightarrow \\int_{'+ str(aa1)+ '}^{'+ str(bb1)+ '} '+ latex(expression1) +'\\ dy\\ \\) con el método Trapezoidal de '+ str(particiones) + ' particiones', 
+                                      'procedimiento': integral_c.pasos,
+                                      'resultado': str(aproximacionc) 
+                                    })
+
+            integral_d = integracion_numerica([aa2, bb2], str(expression2.subs(y, x)))
+            aproximaciond = integral_d.trapezoidal_compuesto(particiones)
+            procedimiento2.append({'titulo':'Calcular evaluando el punto  \\( \\ '+ str(d) +' \\ \\) \\( \\ \\Rightarrow \\int_{'+ str(aa2)+ '}^{'+ str(bb2)+ '} '+ latex(expression2) +'\\ dy\\ \\) con el método Trapezoidal de '+ str(particiones) + ' particiones', 
+                                      'procedimiento': integral_d.pasos,
+                                      'resultado': str(aproximaciond) 
+                                    })
+
+            self.pasos.append({ 'titulo':'Calcular las integrales evaluando los límites y la función con \\( \\ c \\ \\) y \\( \\ d \\ \\)', 
+                            'procedimiento2': procedimiento2,
+                            'resultado': '\\( G(c) =  ' + str(aproximacionc) + '\\)' + '\\( \\ \\ G(d) =  ' + str(aproximaciond) + '\\)'  })
+
+            self.solucion =  h*((1/2)*(aproximacionc + aproximaciond)  + aprox_inter) 
             
-            self.solucion =  h*((1/2)*(integracion_numerica([float(a.subs(x, c)), float(b.subs(x,c))], str(self.exp.subs(x,c).subs(y, x))).trapezoidal_compuesto(particiones)  + integracion_numerica([float(a.subs(x, d)), float(b.subs(x, d))], str(self.exp.subs(x,d).subs(y, x))).trapezoidal_compuesto(particiones))  + aprox_inter) 
+            self.pasos.append({ 'titulo':'Aproximar la integral con la fórmula', 
+                            'procedimiento': '\\( h_x\\cdot(\\frac{1}{2} \\cdot(G(c) + G(d) ) + \sum G(x_i)  \\) ',
+                            'resultado': '\\( \\Rightarrow '+ str(h)+'\\cdot(\\frac{1}{2} \\cdot ('+ str(aproximacionc) +'  + '+ str(aproximaciond) +') +'+ str(aprox_inter) +'  = \\ \\)' + str(self.solucion) })
+
             self.metodo = "Trapezoidal compuesto doble"
             return N(self.solucion)
         
@@ -396,7 +607,37 @@ class integracion_numerica():
             
             self.metodo = "Simpson 3/8 compuesto doble"
             return N(self.solucion)
+            
+    ####----- Extrapolación: ------####   
+    def romberg(self, n, i=2, metodo = None):
         
+        assert n%2 == 0, 'N tiene que ser par'
+        
+        if i == 2:
+            ## O(n^2)
+            metodos = {'1':self.trapezoidal_compuesto, 
+                       '2':self.simpson1_3_compuesto,
+                       '3':self.simpson3_8_compuesto}
+            opcion = metodo
+            no_trapecios = int(n/2)
+                                                                                                          
+            self.estimadores = [metodos[opcion](1)] +[metodos[opcion](particiones) for particiones in range(2, no_trapecios*2, 2)]
+            
+            if n != 2:
+                return self.romberg(n, i + 2)
+            else:
+                return self.estimadores[0]
+        
+        elif i == n:
+            self.solucion = ( 1/(4**((i-2)/2) -1 ) )*((4**((i-2)/2))*self.estimadores[1] - self.estimadores[0])
+            self.metodo = "Romberg con " + self.metodo + "y O(h^" + str(n) + ")"
+            self.reiniciar_errores()
+            return N(self.solucion)
+    
+        else:
+            self.estimadores = [( 1/(4**((i-2)/2) -1 ) )*((4**((i-2)/2))*self.estimadores[pos+1] - self.estimadores[pos]) for pos in range(len(self.estimadores)-1)]
+            return self.romberg(n, i + 2)
+
     ####----- ERRORES: ------####
     def maximo(self, grado, f = None):
         if not f:
@@ -419,7 +660,13 @@ class integracion_numerica():
                 maximo = valor
                 
         return maximo
-        
+    def reiniciar_errores(self):
+        self.aproximado = None
+        self.estimado = None
+        self.cota = None 
+        self.total = None
+        self.relativo = None
+        self.verdadero = None    
     def errores(self, error = None):
         x = symbols('x')
         y = symbols('y')
