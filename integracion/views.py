@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect
 from sympy import parse_expr, latex
 from symboesfm.metodos import integracion_numerica
+from sympy.parsing.latex import parse_latex
+
 def view(request):
     
-    equation =  request.session['eq']  
+    equation =  request.session['eql']  
     #equation = latex(parse_expr( request.session['eq']  )).replace('\\','*').replace('*',chr(92) )
-
-
     
     if request.session['tipo'] == "simple":
         integral = integracion_numerica([float(request.session['a']), float(request.session['b'])], request.session['eq'] )
@@ -80,7 +80,8 @@ def extrapolacion(request):
 
 def submit(request):
     if request.method == 'POST':
-        request.session['eq'] =  request.POST['eq']
+        request.session['eq'] =  str(parse_latex(request.POST['eq']))
+        request.session['eql'] = request.POST['eq']
         request.session['a'] =  request.POST['a']
         request.session['b'] =  request.POST['b']
         request.session['metodo'] =  request.POST['metodo']
