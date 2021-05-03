@@ -471,7 +471,7 @@ class integracion_numerica():
             
             self.pasos.append({ 'titulo':'Aproximar la integral con la fórmula', 
                             'procedimiento': '\\( h_x\\cdot(\\frac{1}{2} \\cdot(G(c) + G(d) ) + \sum G(x_i)  \\) ',
-                            'resultado': '\\( \\Rightarrow '+ str(h)+'\\cdot(\\frac{1}{2} \\cdot ('+ str(aproximacionc) +'  + '+ str(aproximaciond) +') +'+ str(aprox_inter) +'  = \\ \\)' + str(self.solucion) })
+                            'resultado': '\\( \\Rightarrow '+ str(h)+'\\cdot(\\frac{1}{2} \\cdot ('+ str(aproximacionc) +'  + '+ str(aproximaciond) +') +'+ str(aprox_inter) +'  = \\ ' + str(self.solucion)+' \\)'  })
 
             self.metodo = "Trapezoidal compuesto doble"
             return N(self.solucion)
