@@ -248,7 +248,7 @@ class integracion_numerica():
         
         return N(self.solucion)
     
-    def simpson3_8_compuesto(self, particiones, errores = True):
+    def simpson3_8_compuesto(self, particiones, errores = False):
         x = symbols('x')
         h = (self.b-self.a)/(3*particiones)
         self.pasos.append({ 'titulo':'Calcular h', 
