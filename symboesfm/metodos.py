@@ -763,7 +763,10 @@ class integracion_numerica():
             c = intervalo2[0]
             d = intervalo2[1]
             h = (d-c)/(3*particiones)
-            
+            self.pasos.append({ 'titulo':'Calcular \\( \\ h_x \\ \\)', 
+                            'procedimiento': '\\( h_x = \\frac{d-c}{3\\cdot particiones}  \\)',
+                            'resultado': '\\( \\Rightarrow  h_x = \\frac{'+ str(d) + ' - ' + str(c) +'}{ 3 \\cdot '+str(particiones)+'}  = ' + str(h)+ '\\)'})
+
             a = parse_expr(self.a)
             b = parse_expr(self.b)
             
@@ -773,13 +776,112 @@ class integracion_numerica():
             self.d = d
             
             soportes = np.linspace(c + h, d - h, 3*particiones - 1)
+            self.pasos.append({ 'titulo':'Calcular puntos de soporte', 
+                            'procedimiento': 'De \\( \\ h_x \\ \\) en \\( \\ h_x \\ \\) desde \\(c\\) hasta \\(d\\)',
+                            'resultado': '\\( x_i =  \\)' + ' ' + str(list(soportes))})
+
+            ##### s1
+            funcion_evaluada = []
+            procedimiento = []
+            puntos_soporteS1 = [soportes[t] for t in range(0,3*particiones,3)]
+            for t in puntos_soporteS1:
+                aa = float(a.subs(x, t))
+                bb = float(b.subs(x, t))
+                expresion =  self.exp.subs(x,t)
+
+                integral = integracion_numerica([aa, bb], str(expresion.subs(y, x)) )
+                aproximacion = integral.simpson3_8_compuesto(particiones, errores = False)
+
+                procedimiento.append({'titulo':'Calcular evaluando el punto de soporte \\( \\ '+ str(t) +' \\ \\) \\( \\ \\Rightarrow \\int_{'+ str(aa)+ '}^{'+ str(bb)+ '} '+ latex(expresion) +'\\ dy\\ \\) con el método Simpson 3/8 de '+ str(particiones) + ' particiones', 
+                                      'procedimiento': integral.pasos,
+                                      'resultado': str(aproximacion) 
+                                    })
+                funcion_evaluada.append(aproximacion)
+            S1 = sum(funcion_evaluada)
+
+            self.pasos.append({ 'titulo':'Calcular S1 con las integrales evaluando los puntos de soporte en posición 0, 3, 4, 7, 10, ...  en los límites de la integral y en la función', 
+                            'procedimiento2': procedimiento,
+                            'resultado': '\\( S1 = \\sum \\ ' + str(funcion_evaluada) + ' \\ = \\ '+ str(S1) + ' \\)' })
+
+            ##### s2
+            funcion_evaluada = []
+            procedimiento = []
+            puntos_soporteS1 = [soportes[t] for t in range(1,3*particiones,3)]
+            for t in puntos_soporteS1:
+                aa = float(a.subs(x, t))
+                bb = float(b.subs(x, t))
+                expresion =  self.exp.subs(x,t)
+
+                integral = integracion_numerica([aa, bb], str(expresion.subs(y, x)) )
+                aproximacion = integral.simpson3_8_compuesto(particiones, errores = False)
+
+                procedimiento.append({'titulo':'Calcular evaluando el punto de soporte \\( \\ '+ str(t) +' \\ \\) \\( \\ \\Rightarrow \\int_{'+ str(aa)+ '}^{'+ str(bb)+ '} '+ latex(expresion) +'\\ dy\\ \\) con el método Simpson 3/8 de '+ str(particiones) + ' particiones', 
+                                      'procedimiento': integral.pasos,
+                                      'resultado': str(aproximacion) 
+                                    })
+                funcion_evaluada.append(aproximacion)
+            S2 = sum(funcion_evaluada)
             
-            S1 = sum([integracion_numerica([float(a.subs(x, soportes[t])), float(b.subs(x, soportes[t]))], str(self.exp.subs(x,soportes[t]).subs(y, x))).simpson3_8_compuesto(particiones, errores = False) for t in range(0,3*particiones,3)])
-            S2 = sum([integracion_numerica([float(a.subs(x, soportes[t])), float(b.subs(x, soportes[t]))], str(self.exp.subs(x,soportes[t]).subs(y, x))).simpson3_8_compuesto(particiones, errores = False) for t in range(1,3*particiones,3)])
-            S3 = sum([integracion_numerica([float(a.subs(x, soportes[t])), float(b.subs(x, soportes[t]))], str(self.exp.subs(x,soportes[t]).subs(y, x))).simpson3_8_compuesto(particiones, errores = False) for t in range(3,3*particiones-1,3)])
+
+            self.pasos.append({ 'titulo':'Calcular S2 con las integrales evaluando los puntos de soporte en posición 1, 4, 7, 10, ... impares en los límites de la integral y en la función', 
+                            'procedimiento2': procedimiento,
+                            'resultado': '\\( S2 = \\sum \\ ' + str(funcion_evaluada) + ' \\ = \\ '+ str(S2) + ' \\)' })
+            ##### s3
+            funcion_evaluada = []
+            procedimiento = []
+            puntos_soporteS1 = [soportes[t] for t in range(3,3*particiones-1,3)]
+            for t in puntos_soporteS1:
+                aa = float(a.subs(x, t))
+                bb = float(b.subs(x, t))
+                expresion =  self.exp.subs(x,t)
+
+                integral = integracion_numerica([aa, bb], str(expresion.subs(y, x)) )
+                aproximacion = integral.simpson3_8_compuesto(particiones, errores = False)
+
+                procedimiento.append({'titulo':'Calcular evaluando el punto de soporte \\( \\ '+ str(t) +' \\ \\) \\( \\ \\Rightarrow \\int_{'+ str(aa)+ '}^{'+ str(bb)+ '} '+ latex(expresion) +'\\ dy\\ \\) con el método Simpson 3/8 de '+ str(particiones) + ' particiones', 
+                                      'procedimiento': integral.pasos,
+                                      'resultado': str(aproximacion) 
+                                    })
+                funcion_evaluada.append(aproximacion)
+            S3 = sum(funcion_evaluada)
             
-            self.solucion =  (3*h/8)*(integracion_numerica([float(a.subs(x, c)), float(b.subs(x,c))], str(self.exp.subs(x,c).subs(y, x))).simpson3_8_compuesto(particiones, errores = False) + 3*S1 + 3*S2 + 2*S3 + integracion_numerica([float(a.subs(x, d)), float(b.subs(x, d))], str(self.exp.subs(x,d).subs(y, x))).simpson3_8_compuesto(particiones, errores = False) ) 
-            
+
+            self.pasos.append({ 'titulo':'Calcular S3 con las integrales evaluando los puntos de soporte en posición 2, 5, 8, 11, ...  en los límites de la integral y en la función', 
+                            'procedimiento2': procedimiento,
+                            'resultado': '\\( S3 = \\sum \\ ' + str(funcion_evaluada) + ' \\ = \\ '+ str(S3) + ' \\)' })
+
+            aa1 = float(a.subs(x, c))
+            bb1 = float(b.subs(x,c))
+            expression1 = self.exp.subs(x,c)
+
+            aa2 = float(a.subs(x, d))
+            bb2 = float(b.subs(x, d))
+            expression2 = self.exp.subs(x,d)
+
+            procedimiento2 = []
+            integral_gc = integracion_numerica([aa1, bb1], str(expression1.subs(y, x)))
+            gc = integral_gc.simpson3_8_compuesto(particiones, errores = False)
+            procedimiento2.append({'titulo':'Calcular evaluando el punto  \\( \\ '+ str(c) +' \\ \\) \\( \\ \\Rightarrow \\int_{'+ str(aa1)+ '}^{'+ str(bb1)+ '} '+ latex(expression1) +'\\ dy\\ \\) con el método Simpson 3/8 de '+ str(particiones) + ' particiones', 
+                                      'procedimiento': integral_gc.pasos,
+                                      'resultado': str(gc) 
+                                    })
+            integral_gd = integracion_numerica([aa2, bb2], str(expression2.subs(y, x)))
+            gd = integral_gd.simpson3_8_compuesto(particiones, errores = False)
+            procedimiento2.append({'titulo':'Calcular evaluando el punto  \\( \\ '+ str(d) +' \\ \\) \\( \\ \\Rightarrow \\int_{'+ str(aa2)+ '}^{'+ str(bb1)+ '} '+ latex(expression2) +'\\ dy\\ \\) con el método Simpson 3/8 de '+ str(particiones) + ' particiones', 
+                                      'procedimiento': integral_gd.pasos,
+                                      'resultado': str(gd) 
+                                    })
+
+            self.pasos.append({ 'titulo':'Calcular las integrales evaluando los límites y la función con \\( \\ c \\ \\) y \\( \\ d \\ \\) ', 
+                            'procedimiento2':procedimiento2 ,
+                            'resultado': f'\\(G(c) = {gc} \\ \\ G(d) = {gd} \\)'  })
+
+
+            self.solucion =  (3*h/8)*(gc + 3*S1 + 3*S2 + 2*S3 + gd ) 
+            self.pasos.append({ 'titulo':'Calcular la aproximación con la fórmula', 
+                            'procedimiento': '\\( 3 \\cdot h\\cdot\\frac{1}{8} \\cdot (G(c) + G(d) + 3 \\cdot S1 + 3 \\cdot S2 + 2 \\cdot S3) \\)',
+                            'resultado': ' \\( \\Rightarrow \\ 3 \\cdot' + str(h) +'\\cdot\\frac{1}{8} \\cdot ('+ str(gc) +' + '+ str(gd) +' + 3 \\cdot '+  str(S1) +'+ 3\\cdot '+ str(S2) + '\\) \n \\( + 2\\cdot '+ str(S3)  +' =  ' + str(self.solucion) + ' \\)'    })
+        
             self.metodo = "Simpson 3/8 compuesto doble"
             return N(self.solucion)
             
