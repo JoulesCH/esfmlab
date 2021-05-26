@@ -12,12 +12,14 @@
 
 {%block content%}
 
-    <h3>Integral ingresada: </h3>
+    <h3 style = "margin-top:30px;">Integral ingresada: </h3>
     <div style = "font-size:xx-large;">
         {%if tipo == "doble1" %}
             $$\int_{ {{request.session.c}} }^{ {{request.session.d}} } \int_{ {{request.session.a}} }^{ {{request.session.b}} } {{equation}} \ dx \ dy$$
         {%elif tipo == "doble2" %}
             $$\int_{ {{request.session.c}} }^{ {{request.session.d}} } \int_{ {{aa}} }^{ {{bb}} } {{equation}} \ dy \ dx$$
+        {%elif tipo == "Indeinida" %}
+            $$\int  {{equation}} \ dx$$
         {%else%}
             $$\int_{ {{request.session.a}} }^{ {{request.session.b}} } {{equation}} \ dx$$
         {%endif%}
@@ -27,6 +29,8 @@
             <p style = "font-size:large;">La aproximación con el método simple de <b>{{metodo}}</b> es de: </p>
         {%elif tipo == "romberg"%}
         <p style = "font-size:large;">La aproximación con el método de <b>{{metodo}}</b> y <b> \( O(h^{{request.session.particiones}}) \)</b> es de: </p>
+        {%elif tipo == "Indeinida" %}
+        <p style = "font-size:large;">El resultado es: </p>
         {%else%}
             <p style = "font-size:large;">La aproximación con el método compuesto de <b>{{metodo}}</b> con <b>{{request.session.particiones}}</b> particiones es de: </p>
         {%endif%}
@@ -41,23 +45,31 @@
         {%elif  "doble" in tipo%}
             <a class="btn btn-primary"  style = "width:100%;" href = "{%url "doble"%}" >Ingresar otra</a>
         {%elif tipo == "romberg"%}
+        
             <a class="btn btn-primary"  style = "width:100%;" href = "{%url "extrapolacion"%}" >Ingresar otra</a>
+        {%elif tipo == "Indeinida" %} 
+            <a class="btn btn-primary"  style = "width:100%;" href = "{%url "indefinida"%}" >Ingresar otra</a>
         {%endif%}
     </div>
 
     <ul class="nav nav-tabs" id="myTab" role="tablist" style =  "padding-top:30px;">
+        {%if tipo != "Indeinida" %}
         <li class="nav-item" role="presentation">
           <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">Errores</button>
         </li>
+        {%endif%}
         <li class="nav-item" role="presentation">
           <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">Pasos</button>
         </li>
+        {%if tipo != "Indeinida" %} 
         <li class="nav-item" role="presentation">
           <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">Fórmula</button>
         </li>
+        {%endif%}
       </ul>
     <div class="tab-content" id="myTabContent" style = "padding:20px; padding-bottom:100px;">
         <!-- Errores -->
+    {%if tipo != "Indeinida" %}   
         <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
             <table class="table table-hover">
                 <thead>
@@ -80,7 +92,7 @@
                 </tbody>
             </table>
         </div>
-
+    {%endif%}
         <!-- Pasos -->
         <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab" style = "font-size:1.2rem;">
             <div style = "padding:10px;">

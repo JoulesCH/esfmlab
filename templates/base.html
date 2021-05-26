@@ -11,9 +11,12 @@
     <link rel="shortcut icon" type = "image/png" href="{% static 'favicon.ico' %}">
     
 </head>
-<body>
+<body style = "background:#E1EDFF;">
+    <div >
+        <!-- <h1  style = "color: #08459E;padding:30px; padding-top:40px; padding-bottom:7px;">{{request.path }}</h1> -->
+    </div>
     {%include "navbar.html"%}
-    <div style = "padding:30px; padding-top:70px;">
+    <div style = "padding:30px; padding-top:50px; width: 70%; margin-left:auto; margin-right:auto;">
         {%block content%}
         {%endblock%}
     </div>

@@ -18,6 +18,7 @@ urlpatterns = [
     path('integracion/simple/', integracion_views.simple, name =  "simple"),
     path('integracion/doble/', integracion_views.doble, name =  "doble"),
     path('integracion/submit/', integracion_views.submit, name = 'submit'),
-    path('integracion/extrapolacion/', integracion_views.extrapolacion, name = 'extrapolacion')
+    path('integracion/extrapolacion/', integracion_views.extrapolacion, name = 'extrapolacion'),
+    path('integracion/indefinida', integracion_views.indefinida, name = 'indefinida')
 
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
