@@ -1,6 +1,7 @@
 {%extends "base.html"%}
 {%load static%}
 {%block header%}
+    <link rel="shortcut icon" type = "image/png" href="{% static 'favicon.ico' %}">
     <title> ESFMlab |  Ingresar Ecuación</title>
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/mathquill/0.10.1/mathquill.min.css">`
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
@@ -8,7 +9,6 @@
     <script>
         var MQ = MathQuill.getInterface(2);
     </script>
-    <link rel="shortcut icon" type = "image/png" href="{% static 'favicon.ico' %}">
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script type="text/javascript" id="MathJax-script" async
             src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
@@ -25,7 +25,7 @@
             {%csrf_token%}
             <input type="hidden" value = "simple" name = "tipo">
             {%include "buttons.html"%}
-            <label for="exampleFormControlInput1" class="form-label">Ingresa la ecuación f(x) <b></b></label>
+            <label for="exampleFormControlInput1" class="form-label">Ingresa la función f(x) <b></b></label>
             <div style = "width:100%; background-color: white;" name = "divmb">
                 <span id="math-field" autofocus  name = "mathinputprincipal" style =  "width:100%; min-height: calc(1.5em + 1rem + 2px);
                                                 padding: .5rem 1rem;

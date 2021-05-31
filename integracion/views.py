@@ -88,12 +88,12 @@ def extrapolacion(request):
 
 def submit(request):
     if 'indefinida' in request.META.get('HTTP_REFERER'):
-        request.session['eq'] =  str(parse_latex(request.POST['eq'].replace('e', 'E')))
+        request.session['eq'] =  str(parse_latex(request.POST['eq'].replace('\\left','').replace('\\right','').replace('e', 'E')))
         request.session['tipo'] = "indefinida"
         return redirect('view')
     if request.method == 'POST':
         
-        request.session['eq'] =  str(parse_latex(request.POST['eq'].replace('e', 'E')))
+        request.session['eq'] =  str(parse_latex(request.POST['eq'].replace('\\left','').replace('\\right','').replace('e', 'E')))
         request.session['eql'] = request.POST['eq']
         request.session['a'] =  request.POST['a']
         request.session['b'] =  request.POST['b']
